@@ -1,75 +1,93 @@
 include <config.scad>;
 
-module tooth(height, base, top) {
+module tooth(h, b, a, t) {
+	// h = height
+	// b = longer edge
+	// a = shorter edge
+	// t = tolerance (added equally all around)
+
+	x1 = 1/2 * a + t;
+	y1 = h;
+	x2 = 1/2 * b + t;
+	y2 = 0;
+
+	m = (y2 - y1)/(x2 - x1);
+	b = y1 - m * x1;
+
+	function x(y) = (y-b)/m;
+
 	polygon([
-		[-base/2, 0],
-		[base/2, 0],
-		[top/2,height],
-		[-top/2,height]
+		[-x(-t), -t],
+		[x(-t), -t],
+		[x(h+t), h+t],
+		[-x(h+t), h+t]
 	]);
 }
 
 
-module rounded_rect(w, h, bevel, steps)
+module rounded_rect(w, h, bevel)
 {
 	hull()
 	{
 		// place 4 circles in the corners, with the given radius
 		for (x = [-1, 1], y = [-1, 1])
-			translate([x * (w/2 - bevel), y * (h/2 - bevel), 0])
-			circle(r=bevel, $fn=steps*4);
+			translate([x * (w/2 - bevel), y * (h/2 - bevel)])
+			circle(r=bevel);
 	}
 }
 
-
-module body(od, id, bevel, steps) {
-	difference() {
-		rounded_rect(od, od, bevel, steps);
-		rounded_rect(id, id, bevel, steps);
-	}
-}
-
-
-module xor() {
-	difference() {
-		for (i = [0 : $children - 1])
-			children(i);
-		intersection_for (i = [0: $children - 1])
-			children(i);
-	}
-}
 
 module box(od, depth, thickness, teeth, box_color, drawer_color) {
-	bevel = od/6;
-	id = od - thickness * 2;
+	step = od/(teeth+1);
+	
+	tooth_top = 7.5;//od/8;
+	tooth_bottom = 5;//od/12;
+	
+	tolerance = 0.2;
 
-	color(box_color)
+	bevel = 10;
+	id = od - thickness * 2 - tooth_height;
+
 	linear_extrude(height = depth, center = false)
 	{
-		num_teeth = 3;
-		gap_teeth = 1;
-		step = od/(teeth+1);
-		tolerance = 0.08;
-		tooth_top = od/8;
-		tooth_bottom = od/10;
-		
-		xor() {
-			body(od, id, bevel);
-			for (i = [-od/2 + step : step : od/2 - step], j = [0,-90], k = [1, -1])
+		difference() {
+			union() {
+				// Body
+				difference() {
+					union() {
+						translate([tooth_height, tooth_height]/2)
+						rounded_rect(od - tooth_height, od - tooth_height, bevel);
+						rounded_rect(od, od, bevel);
+					}
+					translate([tooth_height, tooth_height]/2)
+					rounded_rect(id, id, bevel - thickness);
+				}
+
+				// Teeth
+				for (i = [-od/2 + step : step : od/2 - step], j = [0,-90])
+					rotate([0, 0, j])
+					translate([i, od/2, 0])
+					tooth(tooth_height, tooth_bottom, tooth_top, 0);
+			}
+
+			// Sockets
+			for (i = [-od/2 + step : step : od/2 - step], j = [0,-90])
 				rotate([0, 0, j])
-				translate([i, k * od/2, 0])
-				tooth(thickness/2, tooth_bottom, tooth_top);
+				translate([i, -od/2, 0])
+				tooth(tooth_height, tooth_bottom, tooth_top, tolerance);
 		}
 	}
 
 	color(drawer_color)
 	linear_extrude(height=2, center=false)
 	{
-		rounded_rect(id, id, bevel);
+		translate([tooth_height, tooth_height]/2)
+		rounded_rect(id, id, bevel - thickness);
 	}
 }
 
-translate([-(rows-1)/2*s,0,0])
+rows = 4;
+*translate([-(rows-1)/2*s,0,0])
 	for (row = [0:rows-1]) {
 		y = (2 * row + 1) * s/2;
 
@@ -80,10 +98,15 @@ translate([-(rows-1)/2*s,0,0])
 		}
 	}
 
-for (i = [0:1]) {
+*for (i = [0:1]) {
 	translate([0,-(i + 1/2) * s, 0])
 	color("brown")
 	box(s, d, thickness, teeth);
 }
 
-! box(s, d, thickness, teeth);
+%translate([-s/2, 0])
+box(s, d, thickness, teeth, "green", "red");
+%translate([0, s])
+box(s, d, thickness, teeth, "green", "red");
+translate([s/2, 0])
+box(s, d, thickness, teeth, "blue", "red");
