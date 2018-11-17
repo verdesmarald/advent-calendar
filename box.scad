@@ -56,12 +56,20 @@ module box(od, depth, thickness, teeth, box_color, drawer_color) {
 				difference() {
 					union() {
 						translate([tooth_height, tooth_height]/2)
-						rounded_rect(od - tooth_height, od - tooth_height, bevel);
+							rounded_rect(od - tooth_height, od - tooth_height, bevel);
 						rounded_rect(od, od, bevel);
 					}
 					translate([tooth_height, tooth_height]/2)
 					rounded_rect(id, id, bevel - thickness);
 				}
+
+				
+				// Pegs in the center of each side to support drawers
+				peg_size = 2;
+				translate([tooth_height, tooth_height]/2)
+				for (p = [[1, 0], [0, 1], [-1, 0], [0, -1]])
+					translate([p[0] * (id - peg_size)/2 , p[1] * (id - peg_size)/2])					
+					square(peg_size, true);
 
 				// Teeth
 				for (i = [-od/2 + step : step : od/2 - step], j = [0,-90])
