@@ -25,6 +25,13 @@ module tooth(h, b, a, t) {
 }
 
 
+module pegs(peg_height, peg_width, id) {
+	for (x = [-1, 1], r = [0, 90])
+		rotate([0, 0, r])
+		translate([x * (id - peg_height)/2 , 0])
+		square([peg_height, peg_width], true);
+}
+
 module rounded_rect(w, h, bevel)
 {
 	hull()
@@ -40,15 +47,14 @@ module rounded_rect(w, h, bevel)
 module box(od, depth, thickness, teeth, box_color, drawer_color) {
 	step = od/(teeth+1);
 	
-	tooth_top = 7.5;//od/8;
-	tooth_bottom = 5;//od/12;
+	tooth_top = 7.5;
+	tooth_bottom = 5;
+	bevel = 10;
 	
 	tolerance = 0.2;
-
-	bevel = 10;
 	id = od - thickness * 2 - tooth_height;
 
-	linear_extrude(height = depth, center = false)
+	linear_extrude(depth, false)
 	{
 		difference() {
 			union() {
@@ -60,16 +66,8 @@ module box(od, depth, thickness, teeth, box_color, drawer_color) {
 						rounded_rect(od, od, bevel);
 					}
 					translate([tooth_height, tooth_height]/2)
-					rounded_rect(id, id, bevel - thickness);
+						rounded_rect(id, id, bevel - thickness);
 				}
-
-				
-				// Pegs in the center of each side to support drawers
-				peg_size = 2;
-				translate([tooth_height, tooth_height]/2)
-				for (p = [[1, 0], [0, 1], [-1, 0], [0, -1]])
-					translate([p[0] * (id - peg_size)/2 , p[1] * (id - peg_size)/2])					
-					square(peg_size, true);
 
 				// Teeth
 				for (i = [-od/2 + step : step : od/2 - step], j = [0,-90])
@@ -85,6 +83,11 @@ module box(od, depth, thickness, teeth, box_color, drawer_color) {
 				tooth(tooth_height, tooth_bottom, tooth_top, tolerance);
 		}
 	}
+				
+	// Pegs in the center of each side to support drawers
+	linear_extrude(depth - 2, false)
+		translate([tooth_height, tooth_height]/2)
+		pegs(peg_size, peg_size, id);
 
 	color(drawer_color)
 	linear_extrude(height=2, center=false)
