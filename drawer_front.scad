@@ -4,37 +4,37 @@ use <box.scad>;
 use <drawer.scad>;
 use <handle.scad>;
 
-
-tol = 0.2;
-od = s - thickness * 2 - tooth_height - 2 * tol;
-id = od - 2 * drawer_thickness;
-
-%rotate([180,0,0])
-	translate(-[tooth_height, tooth_height, 2*d+4]/2)
-	box(s, d, thickness, teeth, "green", "blue");
-
+od = drawer_od;
+id = drawer_id;
 
 difference() {
-	linear_extrude(2)
-		rounded_rect(od + 2*thickness, od + 2*thickness, bevel);
+	union () {
+		linear_extrude(surface_thickness)
+			rounded_rect(od + 2 * box_thickness, od + 2 * box_thickness, box_bevel);
 
-	for (x=[1, -1], y=[1, -1])
-	translate([x*od/4, y*od/4, 0]) {
-		translate([0, od/16, 0])
-		linear_extrude(1.6, center=true)
-			rounded_rect(15 + 2*tol, 10 + 2*tol, 2);
+		difference() {
+			translate([0, 0, surface_thickness])
+			linear_extrude(surface_thickness)
+				rounded_rect(od, od, box_inner_bevel);
 
-		translate([0, -od/8, -5])
-			handle(15, 2, 8);
+			translate([0, 0, -30]) {		
+				drawer(box_inner, drawer_depth, drawer_height + 2 * tolerance, drawer_thickness + 2 * tolerance, box_inner_bevel);
+				linear_extrude(drawer_depth)
+					pegs(2 * peg_height + 2 * tolerance, 3 * peg_width + 4 * tolerance, drawer_od);
+			}
+		}
 	}
+
+	translate([0, od/16, 0])
+		linear_extrude(1.6, center=true)
+		rounded_rect(15 + 2 * tolerance, 10 + 2 * tolerance, 2 + 2 * tolerance);
+
+	translate([0, -od/8, -5])
+		handle(15, 2, 8);
 }
 
-rotate([180,0,0])
-translate([0,0,-4])
-difference() {
-	linear_extrude(2)
-		rounded_rect(od, od, bevel - thickness);
+*translate(-[tooth_height/2, tooth_height/2, box_height])
+	box(box_size - tooth_height, box_height, box_thickness, teeth);
 
-	translate([0, 0, -d+4])
-		drawer(od+2, drawer_thickness+1);
-}
+%translate([0, 0, -drawer_depth-2])
+	drawer(drawer_od, drawer_depth, drawer_height, drawer_thickness, box_inner_bevel - tolerance);
