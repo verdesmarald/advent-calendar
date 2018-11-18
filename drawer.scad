@@ -2,36 +2,37 @@ include <config.scad>;
 
 use <box.scad>;
 
-%translate(-[tooth_height, tooth_height, 4]/2)
-	box(s, d, thickness, teeth, "green", "blue");
+module drawer(od, depth, height, drawer_thickness, bevel) {
+	id = od - 2 * drawer_thickness;
 
-tol = 0.2;
-od = s - thickness*2 - tooth_height - 2*tol;
-
-echo(od);
-
-
-module drawer(od, drawer_thickness) {
 	difference () {
-		union () {
-			linear_extrude(d-2, false)
-			difference () {
-				rounded_rect(od, od, bevel - thickness);
-				rounded_rect(od-2*drawer_thickness, od-2*drawer_thickness, bevel - thickness - drawer_thickness);
-			}
-			linear_extrude(d-4, false)
-				pegs(2 * peg_size, 3 * peg_size, od);
-			linear_extrude(2, false)
-				rounded_rect(od-2*drawer_thickness, od-2*drawer_thickness, bevel - thickness - drawer_thickness);
+		union () {			
+				difference () {
+					linear_extrude(depth)
+						rounded_rect(od, od, bevel);
+
+					translate([0, 0, surface_thickness])
+					linear_extrude(depth)
+						rounded_rect(id, id, bevel - drawer_thickness);
+				}
+
+			linear_extrude(depth)
+				pegs(2 * peg_height + tolerance, 3 * peg_width + 2 * tolerance, od);
 		}
 
 		translate([0, 0, -1])
-		linear_extrude(d)
-			pegs(drawer_thickness + 0.001, peg_size + 2*tol, od);
+		linear_extrude(depth+2)
+			pegs(peg_height + 2 * tolerance, peg_width + 2 * tolerance, od + 2 * tolerance);
 
-		translate([-s/2, s/4, -d])
-			cube([s, s/4, d*2]);
+		echo(od);
+		echo(height);
+		translate([0, height, depth/2])
+		cube([od+2, od, depth + 2], true);
 	}
 }
 
-drawer(od, drawer_thickness);
+
+%translate(-[tooth_height/2, tooth_height/2, surface_thickness])
+	box(box_size - tooth_height, box_height, box_thickness, teeth);
+
+drawer(drawer_od, drawer_depth, drawer_height, drawer_thickness, box_inner_bevel - tolerance);
