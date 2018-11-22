@@ -1,27 +1,26 @@
 include <config.scad>;
-
 use <box.scad>;
 
 %translate(-[tooth_height, tooth_height, 4]/2)
-	box(s, d, thickness, teeth, "green", "blue");
+	box(box_size - tooth_height, box_height, box_thickness, teeth);
 
-tol = 0.1;
-od = s - thickness*2 - tooth_height;
+divider(
+	box_inner, box_height - 2 * surface_thickness,
+	wall_thickness, peg_width, peg_height, tolerance,
+	quarter=true
+);
 
-echo(od);
-
-module divider() {
-	linear_extrude(d-4) {
+module divider(length, depth, thickness, peg_width, peg_height, tolerance, quarter=false) {
+	linear_extrude(depth) {
 		difference() {
 			union() {
-				square([od - 2*tol, peg_size], true);
-				rotate([0, 0, 90])
-					square([od - 2*tol, peg_size], true);
-				pegs(2 * peg_size, 3 * peg_size, od);
+				square([length - 2 * tolerance, thickness], true);
+				if (quarter)
+					rotate([0, 0, 90])
+						square([length - 2 * tolerance, thickness], true);
+				pegs(2 * peg_height, 3 * peg_width, length);
 			}
-			pegs(peg_size + 2*tol, peg_size + 2*tol, od);
+			pegs(peg_height + tolerance, peg_width + 2 * tolerance, length);
 		}
 	}
 }
-
-divider();
