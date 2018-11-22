@@ -8,7 +8,6 @@ od = drawer_od;
 id = drawer_id;
 
 rotate([0, 0, 90]) {
-		
 	difference() {
 		union () {
 			linear_extrude(surface_thickness)

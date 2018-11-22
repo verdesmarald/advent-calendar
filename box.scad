@@ -25,11 +25,12 @@ module tooth(h, b, a, t) {
 }
 
 
-module pegs(peg_height, peg_width, id) {
+module pegs(peg_height, peg_width, id, quarter=true) {
 	for (x = [-1, 1], r = [0, 90])
-		rotate([0, 0, r])
-		translate([x * (id - peg_height)/2 , 0])
-		square([peg_height, peg_width], true);
+		if (r == 0 || quarter)
+			rotate([0, 0, r])
+			translate([x * (id - peg_height)/2 , 0])
+			square([peg_height, peg_width], true);
 }
 
 module rounded_rect(w, h, bevel)

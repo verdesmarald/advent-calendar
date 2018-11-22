@@ -18,7 +18,7 @@ module divider(length, depth, thickness, peg_width, peg_height, tolerance, quart
 				if (quarter)
 					rotate([0, 0, 90])
 						square([length - 2 * tolerance, thickness], true);
-				pegs(2 * peg_height, 3 * peg_width, length);
+				pegs(2 * peg_height, 3 * peg_width, length, quarter=quarter);
 			}
 			pegs(peg_height + tolerance, peg_width + 2 * tolerance, length);
 		}
