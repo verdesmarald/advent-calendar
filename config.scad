@@ -35,7 +35,7 @@ tooth_bottom = 5;
 peg_height = surface_thickness;
 peg_width= surface_thickness;
 peg_offset = surface_thickness;
-drawer_thickness = wall_thickness;
+drawer_thickness = 0.9;
 
 //*********************//
 // Computed Properties //
@@ -46,3 +46,4 @@ drawer_od = box_inner - 2 * tolerance;
 drawer_id = drawer_od - 2 * drawer_thickness;
 drawer_depth = box_height - surface_thickness - tolerance;
 drawer_height = drawer_od * 3/4;
+drawer_bevel = box_inner_bevel - tolerance;
